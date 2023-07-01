@@ -1,44 +1,95 @@
 const express = require("express");
 const route = express.Router();
+const OrderScheme = require("../models/order_model");
+
+const checkAuth = require("../auth/auth_check");
 
 // Get all orders
-route.get("/", (request, response, next) => {
-  response.status(200).json({
-    message: "order get success",
-  });
+route.get("/", checkAuth, (request, response, next) => {
+  OrderScheme.find()
+    .select("_id product quantity order_status created_at updated_at")
+    .populate("product", "_id name price category created_at updated_at")
+    .exec()
+    .then((result) => {
+      response.status(parseInt(process.env.GET_API_STATUS)).json({
+        message: "order get successfully",
+        data: result,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+        error: error.toString(),
+      });
+    });
 });
 
 // Place new order
-route.post("/", (request, response, next) => {
+route.post("/", checkAuth, (request, response, next) => {
   console.debug(request.body);
-  response.status(201).json({
-    message: "order placed success",
-  });
+  if (request.body.product == null) {
+    response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
+      message: "Product required",
+    });
+  } else if (request.body.quantity == null) {
+    response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
+      message: "Quantity required",
+    });
+  } else {
+    var orderData = {
+      product: request.body.product,
+      quantity: request.body.quantity,
+      created_at: Date(new Date().toUTCString()),
+    };
+
+    const order = new OrderScheme(orderData);
+    order
+      .save()
+      .then((result) => {
+        console.log(result);
+        response.status(parseInt(process.env.POST_API_STATUS)).json({
+          message: "order placed successfully",
+          data: {
+            order_id: result._id,
+          },
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+          error: error.toString(),
+        });
+      });
+  }
 });
 
 // Get specific order
-route.get("/:orderId", (request, response, next) => {
+route.get("/:orderId", checkAuth, (request, response, next) => {
+  console.log(request.user);
   const orderId = request.params.orderId;
 
-  response.status(200).json({
-    message: "order get success",
-    data: {
-      id: orderId,
-    },
-  });
-});
-
-// Update specific order
-route.patch("/:orderId", (request, response, next) => {
-  const orderId = request.params.orderId;
-
-  console.debug(request.body);
-  response.status(200).json({
-    message: "order update success",
-    data: {
-      id: orderId,
-    },
-  });
+  OrderScheme.findById(orderId)
+    .select("_id product quantity order_status created_at updated_at")
+    .populate("product", "_id name price category created_at updated_at")
+    .exec()
+    .then((result) => {
+      if (result != null) {
+        response.status(parseInt(process.env.GET_API_STATUS)).json({
+          message: "order get successfully",
+          data: result,
+        });
+      } else {
+        response.status(parseInt(process.env.NOT_FOUND_API_STATUS)).json({
+          message: "order not found",
+        });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+        error: error.toString(),
+      });
+    });
 });
 
 module.exports = route;

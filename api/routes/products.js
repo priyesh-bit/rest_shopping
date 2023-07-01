@@ -1,25 +1,22 @@
-const express = require("express"),
-  mongoose = require("mongoose"),
-  dotenv = require("dotenv");
+const express = require("express");
 const route = express.Router();
 const ProductScheme = require("../models/product_model");
-
-// config env file
-dotenv.config();
 
 // Get all products
 route.get("/", (request, response, next) => {
   ProductScheme.find()
+    .select("_id name price category created_at updated_at")
     .exec()
     .then((result) => {
       response.status(parseInt(process.env.GET_API_STATUS)).json({
-        message: "product get success",
+        message: "product get successfully",
         data: result,
       });
     })
     .catch((error) => {
+      console.log(error);
       response.status(parseInt(process.env.ERROR_API_STATUS)).json({
-        error: error,
+        error: error.toString(),
       });
     });
 });
@@ -41,7 +38,6 @@ route.post("/", (request, response, next) => {
     });
   } else {
     var productData = {
-      id: new mongoose.Types.ObjectId(),
       name: request.body.name,
       price: request.body.price,
       category: request.body.category,
@@ -54,13 +50,16 @@ route.post("/", (request, response, next) => {
       .then((result) => {
         console.log(result);
         response.status(parseInt(process.env.POST_API_STATUS)).json({
-          message: "product create success",
-          data: product,
+          message: "product create successfully",
+          data: {
+            product_id: result._id,
+          },
         });
       })
       .catch((error) => {
+        console.log(error);
         response.status(parseInt(process.env.ERROR_API_STATUS)).json({
-          error: error,
+          error: error.toString(),
         });
       });
   }
@@ -71,11 +70,12 @@ route.get("/:productId", (request, response, next) => {
   const productId = request.params.productId;
 
   ProductScheme.findById(productId)
+    .select("_id name price category created_at updated_at")
     .exec()
     .then((result) => {
       if (result != null) {
         response.status(parseInt(process.env.GET_API_STATUS)).json({
-          message: "product get success",
+          message: "product get successfully",
           data: result,
         });
       } else {
@@ -85,8 +85,9 @@ route.get("/:productId", (request, response, next) => {
       }
     })
     .catch((error) => {
+      console.log(error);
       response.status(parseInt(process.env.ERROR_API_STATUS)).json({
-        error: error,
+        error: error.toString(),
       });
     });
 });
@@ -101,7 +102,7 @@ route.delete("/:productId", (request, response, next) => {
       if (result != null) {
         if (result.acknowledged == true && result.deletedCount != 0) {
           response.status(parseInt(process.env.DELETE_API_STATUS)).json({
-            message: "product delete success",
+            message: "product delete successfully",
           });
         } else {
           response.status(parseInt(process.env.NOT_FOUND_API_STATUS)).json({
@@ -115,8 +116,9 @@ route.delete("/:productId", (request, response, next) => {
       }
     })
     .catch((error) => {
+      console.log(error);
       response.status(parseInt(process.env.ERROR_API_STATUS)).json({
-        error: error,
+        error: error.toString(),
       });
     });
 });
@@ -148,7 +150,7 @@ route.patch("/:productId", (request, response, next) => {
       .then((result) => {
         if (result != null) {
           response.status(parseInt(process.env.PATCH_API_STATUS)).json({
-            message: "product update success",
+            message: "product update successfully",
           });
         } else {
           response.status(parseInt(process.env.NOT_FOUND_API_STATUS)).json({
@@ -157,8 +159,9 @@ route.patch("/:productId", (request, response, next) => {
         }
       })
       .catch((error) => {
+        console.log(error);
         response.status(parseInt(process.env.ERROR_API_STATUS)).json({
-          error: error,
+          error: error.toString(),
         });
       });
   }

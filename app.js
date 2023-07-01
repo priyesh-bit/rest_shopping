@@ -19,12 +19,14 @@ mongoose
     console.log("MangoDB connection successfully!");
   })
   .catch((error) => {
+    console.log("MangoDB connection error");
     console.log(error);
   });
 
 // Import API routes
 const productsRoutes = require("./api/routes/products");
 const ordersRoutes = require("./api/routes/orders");
+const usersRouters = require("./api/routes/users");
 
 // Logging every http
 app.use(morgan("dev"));
@@ -49,6 +51,7 @@ app.use((reg, res, next) => {
 // Apply API routes
 app.use("/products", productsRoutes);
 app.use("/orders", ordersRoutes);
+app.use("/users", usersRouters);
 
 // Handle 404 globally
 app.use((request, response, next) => {
