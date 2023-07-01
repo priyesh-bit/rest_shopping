@@ -6,9 +6,14 @@ const checkAuth = require("../auth/auth_check");
 
 // Get all orders
 route.get("/", checkAuth, (request, response, next) => {
-  OrderScheme.find()
-    .select("_id product quantity order_status created_at updated_at")
-    .populate("product", "_id name price category created_at updated_at")
+  OrderScheme.find({ user: request.user.user_id })
+    .select("_id product user quantity order_status created_at updated_at")
+    .populate(
+      "product",
+      "_id name price category created_at updated_at",
+      "user",
+      "_id email"
+    )
     .exec()
     .then((result) => {
       response.status(parseInt(process.env.GET_API_STATUS)).json({
@@ -38,6 +43,7 @@ route.post("/", checkAuth, (request, response, next) => {
   } else {
     var orderData = {
       product: request.body.product,
+      user: request.user.user_id,
       quantity: request.body.quantity,
       created_at: Date(new Date().toUTCString()),
     };
@@ -65,12 +71,12 @@ route.post("/", checkAuth, (request, response, next) => {
 
 // Get specific order
 route.get("/:orderId", checkAuth, (request, response, next) => {
-  console.log(request.user);
   const orderId = request.params.orderId;
 
-  OrderScheme.findById(orderId)
-    .select("_id product quantity order_status created_at updated_at")
+  OrderScheme.findOne({ _id: orderId, user: request.user.user_id })
+    .select("_id product user quantity order_status created_at updated_at")
     .populate("product", "_id name price category created_at updated_at")
+    .populate("user", "_id email")
     .exec()
     .then((result) => {
       if (result != null) {

@@ -30,7 +30,7 @@ module.exports = (request, response, next) => {
   } catch (error) {
     console.log(error);
     if (error.name == "TokenExpiredError") {
-      response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+      response.status(parseInt(process.env.UNAUTH_API_STATUS)).json({
         message: "Un Authorized - Token Expired",
       });
     } else {
