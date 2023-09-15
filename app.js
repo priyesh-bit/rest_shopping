@@ -63,6 +63,7 @@ app.use((request, response, next) => {
 
 // Handle API exception globally
 app.use((error, request, response, next) => {
+  console.log(error);
   response.status(error.status || 500);
   response.json({
     message: error.message,

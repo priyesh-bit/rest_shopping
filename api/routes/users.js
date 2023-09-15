@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 // Signup
-route.post("/singup", (request, response, next) => {
+route.post("/signup", (request, response, next) => {
   console.debug(request.body);
   if (request.body.email == null) {
     response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
@@ -87,7 +87,7 @@ route.post("/singup", (request, response, next) => {
 });
 
 // Signin
-route.post("/singin", (request, response, next) => {
+route.post("/signin", (request, response, next) => {
   console.debug(request.body);
   if (request.body.email == null) {
     response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
