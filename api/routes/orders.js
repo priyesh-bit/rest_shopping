@@ -1,7 +1,6 @@
 const express = require("express");
 const route = express.Router();
 const OrderScheme = require("../models/order_model");
-
 const checkAuth = require("../auth/auth_check");
 
 // Get all orders

@@ -1,6 +1,7 @@
 const express = require("express");
 const route = express.Router();
 const ProductScheme = require("../models/product_model");
+const checkAuth = require("../auth/auth_check");
 
 // Get all products
 route.get("/", (request, response, next) => {
@@ -22,7 +23,7 @@ route.get("/", (request, response, next) => {
 });
 
 // Create single product
-route.post("/", (request, response, next) => {
+route.post("/", checkAuth, (request, response, next) => {
   console.debug(request.body);
   if (request.body.name == null) {
     response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
@@ -93,7 +94,7 @@ route.get("/:productId", (request, response, next) => {
 });
 
 // Delete specific product
-route.delete("/:productId", (request, response, next) => {
+route.delete("/:productId", checkAuth, (request, response, next) => {
   const productId = request.params.productId;
 
   ProductScheme.deleteOne({ id: productId })
@@ -124,7 +125,7 @@ route.delete("/:productId", (request, response, next) => {
 });
 
 // Update specific product
-route.patch("/:productId", (request, response, next) => {
+route.patch("/:productId", checkAuth, (request, response, next) => {
   const productId = request.params.productId;
 
   console.debug(request.body);

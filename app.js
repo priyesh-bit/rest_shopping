@@ -12,8 +12,8 @@ dotenv.config();
 mongoose
   .connect(
     "mongodb+srv://priyesh-bhuva:" +
-      process.env.MANGO_ATLAS_PW +
-      "@cluster0.ce3ii3d.mongodb.net/?retryWrites=true&w=majority"
+    process.env.MANGO_ATLAS_PW +
+    "@cluster0.ce3ii3d.mongodb.net/?retryWrites=true&w=majority"
   )
   .then(() => {
     console.log("MangoDB connection successfully!");
@@ -29,10 +29,23 @@ const ordersRoutes = require("./api/routes/orders");
 const usersRouters = require("./api/routes/users");
 
 // Logging every http
-app.use(morgan("dev"));
+app.use(morgan(':method :url :status - :response-time ms IP-:remote-addr'));
 
 // Read json body
 app.use(bodyParser.json());
+
+// Get real ip
+app.set('trust proxy', true)
+
+// Ignore favicon
+function ignoreFavicon(req, res, next) {
+  if (req.originalUrl.includes('favicon.ico')) {
+    res.status(204).end();
+  } else {
+    next();
+  }
+}
+app.use(ignoreFavicon);
 
 // CORS handling [IMPORTANT]
 app.use((reg, res, next) => {
@@ -55,9 +68,8 @@ app.use("/users", usersRouters);
 
 // Handle 404 globally
 app.use((request, response, next) => {
-  var error = Error();
+  var error = Error("Not found");
   error.status = 404;
-  error.message = "Not found";
   next(error);
 });
 
