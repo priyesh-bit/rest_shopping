@@ -11,9 +11,7 @@ dotenv.config();
 // connecting to mangodb
 mongoose
   .connect(
-    "mongodb+srv://priyesh-bhuva:" +
-    process.env.MANGO_ATLAS_PW +
-    "@cluster0.ce3ii3d.mongodb.net/?retryWrites=true&w=majority"
+    process.env.MANGO_ATLAS
   )
   .then(() => {
     console.log("MangoDB connection successfully!");
