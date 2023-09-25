@@ -2,6 +2,21 @@ const express = require("express");
 const route = express.Router();
 const ProductScheme = require("../models/product_model");
 const checkAuth = require("../auth/auth_check");
+const { detectExplicitContent } = require("../common/validations");
+const multer = require('multer');
+var fs = require("fs");
+
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    // Generate a unique filename for the uploaded image.
+    const filename = `${Date.now()}-${file.originalname}`;
+
+    cb(null, filename);
+  }
+});
+
+const upload = multer({ storage });
 
 // Get all products
 route.get("/", (request, response, next) => {
@@ -165,6 +180,36 @@ route.patch("/:productId", checkAuth, (request, response, next) => {
           error: error.toString(),
         });
       });
+  }
+});
+
+// Check image is having nudity or explicit content
+route.post("/check-image-content", upload.single('image'), async (request, response) => {
+
+  try {
+    const image = request.file;
+    const imageB = fs.readFileSync(image.path);
+    detectExplicitContent(imageB).then((result) => {
+      if (result) {
+        response.status(parseInt(process.env.VALIDATION_API_STATUS)).json({
+          message: "Image may contains nudity or explicit content. Please review your imagee or upload different image.",
+        });
+      } else {
+        response.status(parseInt(process.env.POST_API_STATUS)).json({
+          message: "WOW",
+        });
+      }
+    }).catch((error) => {
+      console.log(error);
+      response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+        error: 'Fail to check image content.',
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(parseInt(process.env.ERROR_API_STATUS)).json({
+      error: error.toString(),
+    });
   }
 });
 
